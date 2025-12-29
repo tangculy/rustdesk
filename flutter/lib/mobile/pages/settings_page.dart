@@ -975,7 +975,7 @@ void showAbout(OverlayDialogManager dialogManager) {
         Text('Version: $version'),
         InkWell(
             onTap: () async {
-              const url = 'https://rustdesk.com/';
+              const url = 'https://vlanl.com/';
               await launchUrl(Uri.parse(url));
             },
             child: Padding(
