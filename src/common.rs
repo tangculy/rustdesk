@@ -170,7 +170,7 @@ pub fn is_support_file_transfer_resume(ver: &str) -> bool {
 
 #[inline]
 pub fn is_support_file_transfer_resume_num(ver: i64) -> bool {
-    ver >= hbb_common::get_version_number("1.4.201")
+    ver >= hbb_common::get_version_number("1.4.2")
 }
 
 // is server process, with "--server" args
