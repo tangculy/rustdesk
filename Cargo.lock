@@ -1584,7 +1584,7 @@ checksum = "19d374276b40fb8bbdee95aef7c7fa6b5316ec764510eb64b8dd0e2ed0d7e7f5"
 
 [[package]]
 name = "crc32fast"
-version = "1.4.2"
+version = "1.4.2-1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a97769d94ddab943e4510d138150169a2758b5ef3eb191a9ee688de3e23ef7b3"
 dependencies = [
@@ -6527,7 +6527,7 @@ dependencies = [
 
 [[package]]
 name = "rustdesk"
-version = "1.4.2"
+version = "1.4.2-1"
 dependencies = [
  "android-wakelock",
  "android_logger",
@@ -6642,7 +6642,7 @@ dependencies = [
 
 [[package]]
 name = "rustdesk-portable-packer"
-version = "1.4.2"
+version = "1.4.2-1"
 dependencies = [
  "brotli",
  "dirs 5.0.1",
@@ -7137,7 +7137,7 @@ checksum = "6057adedbec913419c92996f395ba69931acbd50b7d56955394cd3f7bedbfa45"
 
 [[package]]
 name = "signal-hook-registry"
-version = "1.4.2"
+version = "1.4.2-1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a9e9e0b4211b72e7b8b6e85c807d36c212bdb33ea8587f7569562a84df5465b1"
 dependencies = [
