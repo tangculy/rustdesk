@@ -399,6 +399,12 @@ jobs:
             ls -l ./libs/portable/Runner.res;
           fi
 
+      - name: Upload unsigned
+        if: env.UPLOAD_ARTIFACT == 'true'
+        uses: actions/upload-artifact@master
+        with:
+          name: rustdesk-unsigned-windows-${{ matrix.job.arch }}
+          path: Release
       - name: Sign rustdesk files
         if: env.UPLOAD_ARTIFACT == 'true' && env.SIGN_BASE_URL != ''
         shell: bash
@@ -763,6 +769,7 @@ jobs:
     needs:
       - build-for-macOS
       - build-for-windows-flutter
+      - build-for-windows-sciter
     runs-on: ubuntu-latest
     if: ${{ inputs.upload-artifact }}
     steps:
@@ -784,9 +791,14 @@ jobs:
           name: rustdesk-unsigned-windows-x86_64
           path: ./windows-x86_64/
 
+      - name: Download Artifacts
+        uses: actions/download-artifact@master
+        with:
+          name: rustdesk-unsigned-windows-x86
+          path: ./windows-x86/
       - name: Combine unsigned app
         run: |
-          tar czf rustdesk-${{ env.VERSION }}-unsigned.tar.gz *.dmg windows-x86_64
+          tar czf rustdesk-${{ env.VERSION }}-unsigned.tar.gz *.dmg windows-x86_64 windows-x86
 
       - name: Publish unsigned app
         uses: softprops/action-gh-release@v1
@@ -1007,6 +1019,8 @@ jobs:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
         run: |
           export PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH
+          # Increase Gradle JVM memory for CI builds
+          sed -i "s/org.gradle.jvmargs=-Xmx1024M/org.gradle.jvmargs=-Xmx2g/g" ./flutter/android/gradle.properties
           # temporary use debug sign config
           sed -i "s/signingConfigs.release/signingConfigs.debug/g" ./flutter/android/app/build.gradle
           case ${{ matrix.job.target }} in
@@ -1227,6 +1241,8 @@ jobs:
           JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
         run: |
           export PATH=/usr/lib/jvm/java-17-openjdk-amd64/bin:$PATH
+          # Increase Gradle JVM memory for CI builds
+          sed -i "s/org.gradle.jvmargs=-Xmx1024M/org.gradle.jvmargs=-Xmx2g/g" ./flutter/android/gradle.properties
           # temporary use debug sign config
           sed -i "s/signingConfigs.release/signingConfigs.debug/g" ./flutter/android/app/build.gradle
           mv ./flutter/android/app/src/main/jniLibs/arm64-v8a/liblibrustdesk.so ./flutter/android/app/src/main/jniLibs/arm64-v8a/librustdesk.so
@@ -1462,7 +1478,8 @@ jobs:
                rpm \
                unzip \
                wget \
-               xz-utils
+               xz-utils \
+               libssl-dev
             # we have libopus compiled by us.
             apt-get remove -y libopus-dev || true
             # output devs
@@ -1742,7 +1759,8 @@ jobs:
                unzip \
                wget \
                xz-utils \
-               zip
+               zip \
+               libssl-dev
             # arm-linux needs CMake and vcokg built from source as there
             # are no prebuilts available from Kitware and Microsoft
             if [ "${{ matrix.job.vcpkg-triplet }}" = "arm-linux" ]; then
@@ -1829,8 +1847,10 @@ jobs:
             mv ./target/release/rustdesk ./Release/rustdesk
             wget -O ./Release/libsciter-gtk.so https://github.com/c-smile/sciter-sdk/raw/master/bin.lnx/${{ matrix.job.sciter_arch }}/libsciter-gtk.so
             export DEB_ARCH=${{ matrix.job.deb_arch }}
+            export SCITER_BUILD=1
             ./build.py --package ./Release
 
+      # 注：build.py现在会自动生成带-sciter后缀的正确文件名，无需额外重命名
       - name: Rename rustdesk
         shell: bash
         run: |
