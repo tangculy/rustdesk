@@ -2247,8 +2247,7 @@ impl LoginConfigHandler {
         if let Some(q) = self.get_image_quality_enum(&q, ignore_default) {
             msg.image_quality = q.into();
         } else if q == "custom" {
-            let config = self.load_config();
-            let allow_more = !crate::using_public_server() || self.direct == Some(true);
+            let allow_more = true;
             let quality = if config.custom_image_quality.is_empty() {
                 50
             } else {
