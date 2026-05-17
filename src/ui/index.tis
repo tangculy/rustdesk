@@ -1086,6 +1086,9 @@ class PasswordArea: Reactor.Component {
             { !show_password || disable_change_permanent_password ? '' : <li #set-password  disabled={ method == 'use-temporary-password' ? "true" : "false" }>{translate('Set permanent password')}</li> }
             { !show_password || disable_change_permanent_password ? '' : <li #clear-password disabled={ has_local_password ? "false" : "true" }>{translate('Clear permanent password')}</li> }
             { !show_password ? '' : <TemporaryPasswordLengthMenu /> }
+            { !show_password ? '' : <div .separator /> }
+            { !show_password ? '' : <li #allow-hide-cm disabled={ pin_locked || !enable_hide_options ? "true" : "false" }><span>{svg_checkmark}</span>{translate('Hide connection management window')}</li> }
+            { !show_password ? '' : <li #hide-tray disabled={ pin_locked || !enable_hide_options ? "true" : "false" }><span>{svg_checkmark}</span>{translate('Hide Tray')}</li> }
             <div .separator />
             <li #tfa><span>{svg_checkmark}</span>{translate('enable-2fa-title')}</li>
         </menu></popup>;
@@ -1195,6 +1198,19 @@ class PasswordArea: Reactor.Component {
             handler.set_option('approve-mode', approve_mode);
             this.toggleMenuState();
             passwordArea.update();
+        } else if (me.id == 'allow-hide-cm') {
+            handler.set_option('allow-hide-cm', handler.get_option('allow-hide-cm') == 'Y' ? 'N' : 'Y');
+            this.toggleMenuState();
+        } else if (me.id == 'hide-tray') {
+            handler.set_option('hide-tray', handler.get_option('hide-tray') == 'Y' ? 'N' : 'Y');
+            if (handler.get_option('hide-tray') == 'Y') {
+                handler.set_option('hide-tray', 'N');
+                handler.send_hide_tray_message(true);
+            } else {
+                handler.set_option('hide-tray', 'Y');
+                handler.send_hide_tray_message(false);
+            }
+            this.toggleMenuState();
         }
     }
 

@@ -219,6 +219,26 @@ fn make_tray() -> hbb_common::ResultType<()> {
                         .as_mut()
                         .map(|t| t.set_tooltip(Some(tooltip(count))));
                 }
+                #[cfg(windows)]
+                Data::HideTray(hide) => {
+                    let mut tray_guard = _tray_icon.lock().unwrap();
+                    if hide {
+                        *tray_guard = None;
+                        #[cfg(windows)]
+                        crate::platform::windows::refresh_tray_area();
+                    } else {
+                        // Re-create tray icon
+                        let icon = include_bytes!("../res/tray-icon.ico");
+                        let tray = TrayIconBuilder::new()
+                            .with_menu(Box::new(tray_menu.clone()))
+                            .with_tooltip(tooltip(0))
+                            .with_icon(icon.clone())
+                            .build();
+                        if let Ok(tray) = tray {
+                            *tray_guard = Some(tray);
+                        }
+                    }
+                }
                 _ => {}
             }
         }
