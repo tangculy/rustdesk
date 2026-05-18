@@ -265,16 +265,16 @@ jobs:
 
       - name: Build msi
         if: env.UPLOAD_ARTIFACT == 'true'
-        shell: bash
+        shell: pwsh
         run: |
-          APP_NAME_LOWER="${APP_NAME,,}"
-          [ -z "$APP_NAME_LOWER" ] && APP_NAME_LOWER="rustdesk"
+          $APP_NAME_LOWER = (${env:APP_NAME} ?? "rustdesk").ToLower()
           pushd ./res/msi
-          python preprocess.py --arp --app-name "${APP_NAME_LOWER}" -d ../../rustdesk
+          python preprocess.py --arp --app-name "$APP_NAME_LOWER" -d ../../rustdesk
           nuget restore msi.sln
           msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
           mv ./Package/bin/x64/Release/en-us/Package.msi ../../SignOutput/${APP_NAME_LOWER}-${{ env.VERSION }}-${{ matrix.job.arch }}.msi
-          sha256sum ../../SignOutput/${APP_NAME_LOWER}-*.msi
+          Get-FileHash ../../SignOutput/${APP_NAME_LOWER}-*.msi -Algorithm SHA256
+          popd
 
       - name: Sign rustdesk self-extracted file
         if: env.UPLOAD_ARTIFACT == 'true' && env.SIGN_BASE_URL != '-2'
