@@ -432,7 +432,55 @@ def build_flutter_arch_manjaro(version, features):
 
 
 def build_flutter_windows(version, features, skip_portable_pack):
+    # 根据 APP_NAME 环境变量自定义 Windows 构建配置
+    app_name = os.environ.get("APP_NAME", "RustDesk")
+    app_name_lower = app_name.lower()
+
+    # 修改 Flutter Windows CMakeLists.txt 中的 BINARY_NAME
+    cmake_file = "flutter/windows/CMakeLists.txt"
+    if os.path.exists(cmake_file):
+        with open(cmake_file, "r", encoding="utf-8") as f:
+            cmake_content = f.read()
+        cmake_content = cmake_content.replace(
+            'set(BINARY_NAME "rustdesk")',
+            f'set(BINARY_NAME "{app_name_lower}")'
+        )
+        cmake_content = cmake_content.replace(
+            'project(rustdesk LANGUAGES CXX)',
+            f'project({app_name_lower} LANGUAGES CXX)'
+        )
+        with open(cmake_file, "w", encoding="utf-8") as f:
+            f.write(cmake_content)
+
+    # 修改 Runner.rc 中的硬编码名称
+    rc_file = "flutter/windows/runner/Runner.rc"
+    if os.path.exists(rc_file):
+        with open(rc_file, "r", encoding="utf-8") as f:
+            rc_content = f.read()
+        rc_content = rc_content.replace(
+            'VALUE "InternalName", "rustdesk" "\\0"',
+            f'VALUE "InternalName", "{app_name_lower}" "\\0"'
+        )
+        rc_content = rc_content.replace(
+            'VALUE "OriginalFilename", "rustdesk.exe" "\\0"',
+            f'VALUE "OriginalFilename", "{app_name_lower}.exe" "\\0"'
+        )
+        rc_content = rc_content.replace(
+            'VALUE "FileDescription", "RustDesk Remote Desktop" "\\0"',
+            f'VALUE "FileDescription", "{app_name} Remote Desktop" "\\0"'
+        )
+        rc_content = rc_content.replace(
+            'VALUE "ProductName", "RustDesk" "\\0"',
+            f'VALUE "ProductName", "{app_name}" "\\0"'
+        )
+        with open(rc_file, "w", encoding="utf-8") as f:
+            f.write(rc_content)
+
     if not skip_cargo:
+        # 强制重新编译 hbb_common 以确保环境变量注入生效
+        hbb_build_rs = "libs/hbb_common/build.rs"
+        if os.path.exists(hbb_build_rs):
+            pathlib.Path(hbb_build_rs).touch()
         system2(f'cargo build --features {features} --lib --release')
         if not os.path.exists("target/release/librustdesk.dll"):
             print("cargo build failed, please check rust source code.")
@@ -447,19 +495,19 @@ def build_flutter_windows(version, features, skip_portable_pack):
     os.chdir('libs/portable')
     system2('pip3 install -r requirements.txt')
     system2(
-        f'python3 ./generate.py -f ../../{flutter_build_dir_2} -o . -e ../../{flutter_build_dir_2}/rustdesk.exe')
+        f'python3 ./generate.py -f ../../{flutter_build_dir_2} -o . -e ../../{flutter_build_dir_2}/{app_name_lower}.exe')
     os.chdir('../..')
-    if os.path.exists('./rustdesk_portable.exe'):
+    if os.path.exists(f'./{app_name_lower}_portable.exe'):
         os.replace('./target/release/rustdesk-portable-packer.exe',
-                   './rustdesk_portable.exe')
+                   f'./{app_name_lower}_portable.exe')
     else:
         os.rename('./target/release/rustdesk-portable-packer.exe',
-                  './rustdesk_portable.exe')
+                  f'./{app_name_lower}_portable.exe')
     print(
-        f'output location: {os.path.abspath(os.curdir)}/rustdesk_portable.exe')
-    os.rename('./rustdesk_portable.exe', f'./rustdesk-{version}-install.exe')
+        f'output location: {os.path.abspath(os.curdir)}/{app_name_lower}_portable.exe')
+    os.rename(f'./{app_name_lower}_portable.exe', f'./{app_name_lower}-{version}-install.exe')
     print(
-        f'output location: {os.path.abspath(os.curdir)}/rustdesk-{version}-install.exe')
+        f'output location: {os.path.abspath(os.curdir)}/{app_name_lower}-{version}-install.exe')
 
 
 def main():
@@ -495,24 +543,28 @@ def main():
         if flutter:
             build_flutter_windows(version, features, args.skip_portable_pack)
             return
+        # Sciter 版本也支持 APP_NAME 自定义
+        app_name = os.environ.get("APP_NAME", "RustDesk")
+        app_name_lower = app_name.lower()
+        app_name_exe = app_name_lower + '.exe'
         system2('cargo build --release --features ' + features)
         # system2('upx.exe target/release/rustdesk.exe')
-        system2('mv target/release/rustdesk.exe target/release/RustDesk.exe')
+        system2(f'mv target/release/rustdesk.exe "target/release/{app_name_exe}"')
         pa = os.environ.get('P')
         if pa:
             # https://certera.com/kb/tutorial-guide-for-safenet-authentication-client-for-code-signing/
             system2(
                 f'signtool sign /a /v /p {pa} /debug /f .\\cert.pfx /t http://timestamp.digicert.com  '
-                'target\\release\\rustdesk.exe')
+                f'"target\\release\\{app_name_exe}"')
         else:
             print('Not signed')
         system2(
-            f'cp -rf target/release/RustDesk.exe {res_dir}')
+            f'cp -rf "target/release/{app_name_exe}" {res_dir}')
         os.chdir('libs/portable')
         system2('pip3 install -r requirements.txt')
         system2(
-            f'python3 ./generate.py -f ../../{res_dir} -o . -e ../../{res_dir}/rustdesk-{version}-win7-install.exe')
-        system2(f'mv ../../{res_dir}/rustdesk-{version}-win7-install.exe ../..')
+            f'python3 ./generate.py -f ../../{res_dir} -o . -e ../../{res_dir}/{app_name_lower}-{version}-win7-install.exe')
+        system2(f'mv ../../{res_dir}/{app_name_lower}-{version}-win7-install.exe ../..')
     elif os.path.isfile('/usr/bin/pacman'):
         # pacman -S -needed base-devel
         system2("sed -i 's/pkgver=.*/pkgver=%s/g' res/PKGBUILD" % version)
