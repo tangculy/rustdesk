@@ -228,7 +228,6 @@ fn make_tray() -> hbb_common::ResultType<()> {
                         crate::platform::windows::refresh_tray_area();
                     } else {
                         // Re-create tray icon
-                        let icon = include_bytes!("../res/tray-icon.ico");
                         let tray = TrayIconBuilder::new()
                             .with_menu(Box::new(tray_menu.clone()))
                             .with_tooltip(tooltip(0))
