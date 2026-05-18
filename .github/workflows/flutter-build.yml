@@ -270,7 +270,7 @@ jobs:
           APP_NAME_LOWER="${APP_NAME,,}"
           [ -z "$APP_NAME_LOWER" ] && APP_NAME_LOWER="rustdesk"
           pushd ./res/msi
-          python preprocess.py --arp -d ../../rustdesk
+          python preprocess.py --arp --app-name "${APP_NAME_LOWER}" -d ../../rustdesk
           nuget restore msi.sln
           msbuild msi.sln -p:Configuration=Release -p:Platform=x64 /p:TargetVersion=Windows10
           mv ./Package/bin/x64/Release/en-us/Package.msi ../../SignOutput/${APP_NAME_LOWER}-${{ env.VERSION }}-${{ matrix.job.arch }}.msi
