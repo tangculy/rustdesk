@@ -224,8 +224,6 @@ fn make_tray() -> hbb_common::ResultType<()> {
                     let mut tray_guard = _tray_icon.lock().unwrap();
                     if hide {
                         *tray_guard = None;
-                        #[cfg(windows)]
-                        crate::platform::windows::refresh_tray_area();
                     } else {
                         // Re-create tray icon
                         let tray = TrayIconBuilder::new()
