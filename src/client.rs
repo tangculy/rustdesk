@@ -2248,6 +2248,7 @@ impl LoginConfigHandler {
             msg.image_quality = q.into();
         } else if q == "custom" {
             let allow_more = true;
+            let config = self.load_config();
             let quality = if config.custom_image_quality.is_empty() {
                 50
             } else {
