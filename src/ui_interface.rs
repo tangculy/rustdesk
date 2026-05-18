@@ -176,6 +176,21 @@ pub fn get_option<T: AsRef<str>>(key: T) -> String {
     }
 }
 
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+pub fn send_hide_tray_message(hide: bool) {
+    use hbb_common::tokio;
+
+    std::thread::spawn(move || {
+        if let Ok(rt) = tokio::runtime::Runtime::new() {
+            rt.block_on(async {
+                if let Ok(mut conn) = ipc::connect(1000, "hide-tray").await {
+                    let _ = conn.send(&ipc::Data::HideTray(hide)).await;
+                }
+            });
+        }
+    });
+}
+
 #[inline]
 pub fn use_texture_render() -> bool {
     #[cfg(target_os = "android")]

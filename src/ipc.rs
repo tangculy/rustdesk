@@ -324,6 +324,8 @@ pub enum Data {
     Language(String),
     Empty,
     Disconnected,
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
+    HideTray(bool),
     DataPortableService(DataPortableService),
     #[cfg(feature = "flutter")]
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
