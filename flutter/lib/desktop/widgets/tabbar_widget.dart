@@ -813,7 +813,12 @@ class WindowActionPanelState extends State<WindowActionPanel> {
                       // note: the main window can be restored by tray icon
                       Future.delayed(Duration.zero, () async {
                         if (widget.isMainWindow) {
-                          await windowManager.close();
+                          // When hide-tray=Y, hide window instead of closing so the process keeps running
+                          if (bind.mainGetBuildinOption(key: "hide-tray") == "Y") {
+                            await windowManager.hide();
+                          } else {
+                            await windowManager.close();
+                          }
                         } else {
                           await WindowController.fromWindowId(kWindowId!)
                               .close();
